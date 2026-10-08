@@ -24,6 +24,8 @@ import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.format.DateUtils;
 import android.util.Log;
 
@@ -40,6 +42,11 @@ import vendor.lineage.health.IChargingControl;
 import java.io.PrintWriter;
 
 public class ChargingControlController extends LineageHealthFeature {
+    private static final String ACTION_CHARGING_LIMIT_REACHED =
+            "lineageos.intent.action.CHARGING_LIMIT_REACHED";
+    private static final String LAST_CHARGING_LIMIT_REACHED =
+            "lineage_charging_control_last_limit_reached";
+
     private final IChargingControl mChargingControl;
     private final ContentResolver mContentResolver;
     private ChargingControlNotification mChargingNotification;
@@ -70,6 +77,10 @@ public class ChargingControlController extends LineageHealthFeature {
     private float mBatteryPct;
     private boolean mIsPowerConnected;
     private boolean mIsControlCancelledOnce;
+    private boolean mIsPhysicallyPlugged;
+    private int mLastChargingLimitReached = -1;
+    private boolean mValidateRestoredChargingLimit = true;
+    private BroadcastReceiver mPowerDisconnectedReceiver;
 
     // Current selected provider
     private ChargingControlProvider mCurrentProvider;
@@ -91,6 +102,8 @@ public class ChargingControlController extends LineageHealthFeature {
         }
 
         mChargingNotification = new ChargingControlNotification(context, this);
+        mLastChargingLimitReached = Settings.Global.getInt(
+                mContentResolver, LAST_CHARGING_LIMIT_REACHED, -1);
 
         mDefaultEnabled = mContext.getResources().getBoolean(
                 R.bool.config_chargingControlEnabled);
@@ -238,6 +251,10 @@ public class ChargingControlController extends LineageHealthFeature {
     private void updateBatteryInfo(Intent intent) {
         int battStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         int battPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+        mIsPhysicallyPlugged = battPlugged != 0;
+        if (!mIsPhysicallyPlugged) {
+            recordChargingLimitReached(-1);
+        }
 
         if (battStatus == BatteryManager.BATTERY_STATUS_FULL) {
             mIsControlCancelledOnce = false;
@@ -258,6 +275,13 @@ public class ChargingControlController extends LineageHealthFeature {
         }
 
         mBatteryPct = level * 100 / (float) scale;
+        if (mValidateRestoredChargingLimit) {
+            mValidateRestoredChargingLimit = false;
+            // A battery below the restored cap must reach it again before starting a new cycle.
+            if (mBatteryPct < mLastChargingLimitReached) {
+                recordChargingLimitReached(-1);
+            }
+        }
 
         Log.i(TAG, "mIsPowerConnected: " + mIsPowerConnected + ", mBatteryPct: " + mBatteryPct);
     }
@@ -277,6 +301,16 @@ public class ChargingControlController extends LineageHealthFeature {
         if (mChargingControl == null) {
             return;
         }
+
+        mPowerDisconnectedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                mIsPhysicallyPlugged = false;
+                recordChargingLimitReached(-1);
+            }
+        };
+        mContext.registerReceiver(mPowerDisconnectedReceiver,
+                new IntentFilter(Intent.ACTION_POWER_DISCONNECTED));
 
         // Register setting observer
         registerSettings(MODE_URI, LIMIT_URI, ENABLED_URI, START_TIME_URI, TARGET_TIME_URI);
@@ -425,6 +459,17 @@ public class ChargingControlController extends LineageHealthFeature {
         if (mode == MODE_LIMIT) {
             if (mCurrentProvider.update(mBatteryPct, limit)) {
                 mChargingNotification.post(limit, mBatteryPct >= limit);
+                if (mIsPhysicallyPlugged && limit > 0 && limit < 100
+                        && mBatteryPct >= limit && mLastChargingLimitReached != limit) {
+                    recordChargingLimitReached(limit);
+                    int level = Math.round(mBatteryPct);
+                    Intent intent = new Intent(ACTION_CHARGING_LIMIT_REACHED)
+                            .setPackage("com.android.settings")
+                            .putExtra(BatteryManager.EXTRA_LEVEL, level)
+                            .putExtra(BatteryManager.EXTRA_SCALE, 100);
+                    mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM,
+                            android.Manifest.permission.BATTERY_STATS);
+                }
             }
         } else {
             ChargeTime chargeTime = getChargeTime();
@@ -457,6 +502,13 @@ public class ChargingControlController extends LineageHealthFeature {
                 mContext.unregisterReceiver(mAlarmBroadcastReceiver);
                 mAlarmBroadcastReceiver = null;
             }
+        }
+    }
+
+    private void recordChargingLimitReached(int limit) {
+        if (mLastChargingLimitReached != limit) {
+            mLastChargingLimitReached = limit;
+            Settings.Global.putInt(mContentResolver, LAST_CHARGING_LIMIT_REACHED, limit);
         }
     }
 

@@ -2713,6 +2713,7 @@ public final class LineageSettings {
 
         /**
          * Whether to show the brightness slider in quick settings panel.
+         * 0 = hidden, 1 = expanded panel only, 2 = also in the collapsed panel
          * @hide
          */
         public static final String QS_SHOW_BRIGHTNESS_SLIDER = "qs_show_brightness_slider";
@@ -2722,6 +2723,12 @@ public final class LineageSettings {
          * @hide
          */
         public static final String QS_SHOW_AUTO_BRIGHTNESS = "qs_show_auto_brightness";
+
+        /**
+         * Brightness slider position in quick settings: 0 = above tiles, 1 = below tiles
+         * @hide
+         */
+        public static final String QS_BRIGHTNESS_SLIDER_POSITION = "qs_brightness_slider_position";
 
         /**
          * Global stats collection

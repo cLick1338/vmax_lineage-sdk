@@ -18,7 +18,20 @@
     <bool name="def_volume_panel_on_left">false</bool>
 
     <!-- Default for LineageSettings.Secure.QS_SHOW_BRIGHTNESS_SLIDER -->
-    <bool name="def_qs_show_brightness_slider">true</bool>
+    <integer name="def_qs_show_brightness_slider">2</integer>
+
+    <!-- Brightness slider below Quick Settings tiles -->
+    <bool name="def_qs_brightness_slider_position">true</bool>
+
+    <!-- Default for LineageSettings.Secure.BERRY_BLACK_THEME -->
+    <bool name="def_berry_black_theme">true</bool>
+
+    <!-- Network traffic monitor defaults -->
+    <integer name="def_network_traffic_mode">3</integer>
+    <integer name="def_network_traffic_position">2</integer>
+    <bool name="def_network_traffic_autohide">true</bool>
+    <integer name="def_network_traffic_units">4</integer>
+    <integer name="def_network_traffic_show_units">1</integer>
 
     <!-- Defaults for System -->
 
@@ -62,13 +75,13 @@
          * 1: Display the battery as a circle
          * 2: Display the battery as plain text
     -->
-    <integer name="def_battery_style">0</integer>
+    <integer name="def_battery_style">2</integer>
 
     <!-- Default clock position
          * 0: show the clock in the right position (LTR)
          * 1: show the clock in the center
          * 2: show the clock in the left position (LTR)
     -->
-    <integer name="def_clock_position">2</integer>
+    <integer name="def_clock_position">0</integer>
 
 </resources>

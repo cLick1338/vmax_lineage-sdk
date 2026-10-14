@@ -413,8 +413,29 @@ public class LineageDatabaseHelper extends SQLiteOpenHelper{
             loadBooleanSetting(stmt, LineageSettings.Secure.VOLUME_PANEL_ON_LEFT,
                     R.bool.def_volume_panel_on_left);
 
-            loadBooleanSetting(stmt, LineageSettings.Secure.QS_SHOW_BRIGHTNESS_SLIDER,
-                    R.bool.def_qs_show_brightness_slider);
+            loadIntegerSetting(stmt, LineageSettings.Secure.QS_SHOW_BRIGHTNESS_SLIDER,
+                    R.integer.def_qs_show_brightness_slider);
+
+            loadBooleanSetting(stmt, LineageSettings.Secure.QS_BRIGHTNESS_SLIDER_POSITION,
+                    R.bool.def_qs_brightness_slider_position);
+
+            loadBooleanSetting(stmt, LineageSettings.Secure.BERRY_BLACK_THEME,
+                    R.bool.def_berry_black_theme);
+
+            loadIntegerSetting(stmt, LineageSettings.Secure.NETWORK_TRAFFIC_MODE,
+                    R.integer.def_network_traffic_mode);
+
+            loadIntegerSetting(stmt, LineageSettings.Secure.NETWORK_TRAFFIC_POSITION,
+                    R.integer.def_network_traffic_position);
+
+            loadBooleanSetting(stmt, LineageSettings.Secure.NETWORK_TRAFFIC_AUTOHIDE,
+                    R.bool.def_network_traffic_autohide);
+
+            loadIntegerSetting(stmt, LineageSettings.Secure.NETWORK_TRAFFIC_UNITS,
+                    R.integer.def_network_traffic_units);
+
+            loadIntegerSetting(stmt, LineageSettings.Secure.NETWORK_TRAFFIC_SHOW_UNITS,
+                    R.integer.def_network_traffic_show_units);
         } finally {
             if (stmt != null) stmt.close();
         }

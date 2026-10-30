@@ -987,7 +987,8 @@ public final class LineageHardwareManager {
                                 mHIDLMap.get(FEATURE_PICTURE_ADJUSTMENT);
                 return HIDLHelper.fromHIDLHSIC(pictureAdjustment.getPictureAdjustment());
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | UnsupportedOperationException e) {
+            Log.w(TAG, "Picture adjustment backend unavailable", e);
         }
         return null;
     }
@@ -1011,7 +1012,8 @@ public final class LineageHardwareManager {
                                 mHIDLMap.get(FEATURE_PICTURE_ADJUSTMENT);
                 return HIDLHelper.fromHIDLHSIC(pictureAdjustment.getDefaultPictureAdjustment());
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | UnsupportedOperationException e) {
+            Log.w(TAG, "Picture adjustment backend unavailable", e);
         }
         return null;
     }
@@ -1037,7 +1039,8 @@ public final class LineageHardwareManager {
                                 mHIDLMap.get(FEATURE_PICTURE_ADJUSTMENT);
                 return pictureAdjustment.setPictureAdjustment(HIDLHelper.toHIDLHSIC(hsic));
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | UnsupportedOperationException e) {
+            Log.w(TAG, "Picture adjustment backend unavailable", e);
         }
         return false;
     }
@@ -1071,7 +1074,8 @@ public final class LineageHardwareManager {
                         HIDLHelper.fromHIDLRange(pictureAdjustment.getContrastRange()),
                         HIDLHelper.fromHIDLRange(pictureAdjustment.getSaturationThresholdRange()));
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | UnsupportedOperationException e) {
+            Log.w(TAG, "Picture adjustment backend unavailable", e);
         }
         return null;
     }
